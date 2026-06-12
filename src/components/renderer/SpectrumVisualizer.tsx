@@ -21,6 +21,9 @@ type RendererState =
 export default function SpectrumVisualizer(props: RendererProps) {
 	const onError = useContext(ErrorHandlerContext);
 
+	// [[spectrum.builder]]
+	// @what - Build channel-wise spectrum envelopes combining rhythm proximity + pitch energy
+	// @how - For each segment: weight nearby rhythm events (Gaussian) × pitches, scaled by loudness over time
 	const spectrumData = useMemo(() => {
 		if (!props.audioAnalysis) return [];
 
@@ -37,10 +40,17 @@ export default function SpectrumVisualizer(props: RendererProps) {
 
 		if (segments.length === 0 || rhythm.length === 0) return [];
 
+		// @values - knobs affecting rhythm influence and decay
+
+		// @value - width of Gaussian weighting over rhythm indices (in “channel” units)
 		const RHYTHM_WEIGHT = 0.4;
+		// @value - base floor to keep channels visible
 		const RHYTHM_OFFSET = 0.2;
+		// @value - linear decay speed after peaks
 		const FALLOFF_SPEED = 0.4;
 
+		// @value - window size in rhythm indices; controls how many rhythm events influence each channel
+		// @why - channel space is 12 pitches × rhythm channels
 		const rhythmWindowSize = (RHYTHM_WEIGHT / Math.sqrt(2)) * 8;
 
 		const channelCount = 12 * rhythm.length;
@@ -97,6 +107,7 @@ export default function SpectrumVisualizer(props: RendererProps) {
 			}
 		}
 
+		// @how - Convert channelSegments to piecewise envelopes per channel with linear rise and linear falloff
 		const spectrumData: { x: number; y: number }[][] = Array(channelCount)
 			.fill(0)
 			.map(_ => Array(channelSegments.length));
@@ -154,6 +165,10 @@ export default function SpectrumVisualizer(props: RendererProps) {
 		if (state.isError || !ctx) return;
 	}, []);
 
+	// [[spectrum.onRender]]
+	// @what - Draw vertical bars; height sampled from per-channel envelope at current time
+	// @value (barWidth/spaceWidth) - responsive layout per canvas width and channel count
+	// @note - React to canvas size changes and sync render values to data.spectrumData
 	const onRender = useCallback((ctx: CanvasRenderingContext2D | null, data: CanvasData, state: RendererState) => {
 		if (state.isError || !ctx) return;
 

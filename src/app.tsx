@@ -15,6 +15,7 @@ export type RendererProps = {
 	isEnabled: boolean;
 	themeColor: Spicetify.Color;
 	audioAnalysis?: SpotifyAudioAnalysis;
+	rotation?: number;
 };
 
 export type RendererDefinition = {
@@ -23,6 +24,8 @@ export type RendererDefinition = {
 	renderer: React.FunctionComponent<RendererProps>;
 };
 
+// [[app.renderers]]
+// @what - Available visualizer renderers exposed in UI
 const RENDERERS: RendererDefinition[] = [
 	{
 		id: "ncs",
@@ -41,6 +44,8 @@ const RENDERERS: RendererDefinition[] = [
 	}
 ];
 
+// [[app.state]]
+// @what - Visualizer state machine: loading → running, or error with recovery strategy
 type VisualizerState =
 	| {
 			state: "loading" | "running";
@@ -51,14 +56,18 @@ type VisualizerState =
 	  };
 
 export default function App(props: { isSecondaryWindow?: boolean; initialRenderer?: string }) {
+	// @value (rendererId) - currently selected renderer id from menu or initial prop
 	const [rendererId, setRendererId] = useState<string>(props.initialRenderer || "ncs");
 	const Renderer = RENDERERS.find(v => v.id === rendererId)?.renderer;
 
+	// @values - visualizer state and track-dependent data (audio analysis + theme color)
 	const [state, setState] = useState<VisualizerState>({ state: "loading" });
 	const [trackData, setTrackData] = useState<{ audioAnalysis?: SpotifyAudioAnalysis; themeColor: Spicetify.Color }>({
 		themeColor: Spicetify.Color.fromHex("#535353")
 	});
 
+	// [[app.errors]]
+	// @how - Gate unrecoverable errors so UI doesn't flicker back to loading
 	const updateState = useCallback(
 		(newState: VisualizerState) =>
 			setState(oldState => {
@@ -81,8 +90,13 @@ export default function App(props: { isSecondaryWindow?: boolean; initialRendere
 
 	const isUnrecoverableError = state.state === "error" && state.errorData.recovery === ErrorRecovery.NONE;
 
+	// [[app.metadata]]
+	// @what - Service to fetch extracted album art color via Spotify's internal metadata APIs
 	const metadataService = useMemo(() => new MetadataService(), []);
 
+	// [[app.updatePlayerState]]
+	// @what - Loads audio analysis JSON + extracted color for current track
+	// @how - Validates track type, handles cosmos errors, maps color protobuf to CSS color
 	const updatePlayerState = useCallback(
 		async (newState: Spicetify.PlayerState) => {
 			const item = newState?.item;
@@ -100,6 +114,7 @@ export default function App(props: { isSecondaryWindow?: boolean; initialRendere
 
 			updateState({ state: "loading" });
 
+			// @values - parallel fetch: analysis JSON + extracted color (protobuf)
 			const analysisRequestUrl = `https://spclient.wg.spotify.com/audio-attributes/v1/audio-analysis/${uri.id}?format=json`;
 			const [audioAnalysis, vibrantColor] = await Promise.all([
 				Spicetify.CosmosAsync.get(analysisRequestUrl).catch(e => console.error("[Visualizer]", e)) as Promise<unknown>,
@@ -120,6 +135,7 @@ export default function App(props: { isSecondaryWindow?: boolean; initialRendere
 					})
 			]);
 
+			// @what - Handle network/protobuf failures and malformed responses
 			if (!audioAnalysis) {
 				onError(
 					"Error: The audio analysis could not be loaded, please check your internet connection",
@@ -152,12 +168,16 @@ export default function App(props: { isSecondaryWindow?: boolean; initialRendere
 				}
 			}
 
+			// @meaning - Successful load; hand to renderer
 			setTrackData({ audioAnalysis: audioAnalysis as SpotifyAudioAnalysis, themeColor: vibrantColor });
 			updateState({ state: "running" });
 		},
 		[metadataService]
 	);
 
+
+	// [[app.playerListeners]]
+	// @what - Subscribe to song changes to refresh analysis/color automatically
 	useEffect(() => {
 		if (isUnrecoverableError) return;
 
@@ -171,6 +191,8 @@ export default function App(props: { isSecondaryWindow?: boolean; initialRendere
 		return () => Spicetify.Player.removeEventListener("songchange", songChangeListener as PlayerEventListener);
 	}, [isUnrecoverableError, updatePlayerState]);
 
+	// [[app.ui]]
+	// @what - Render active renderer + menu button (hidden in secondary window), and error/loading UI
 	return (
 		<div className="visualizer-container">
 			{!isUnrecoverableError && (

@@ -4,10 +4,12 @@ export type ErrorHandler = (msg: string, recovery: ErrorRecovery) => void;
 
 export const ErrorHandlerContext = createContext<ErrorHandler>(() => {});
 
+// [[error.types]]
+// @what - Error handler signature + recovery hints to control retry strategy
 export enum ErrorRecovery {
-	MANUAL,
-	SONG_CHANGE,
-	NONE
+	MANUAL,      // @meaning - show retry button (user action)
+	SONG_CHANGE, // @meaning - retry when song changes
+	NONE         // @meaning - unrecoverable; keep error visible until reload
 }
 
 export type ErrorData = {

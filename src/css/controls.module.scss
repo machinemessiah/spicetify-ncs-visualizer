@@ -1,0 +1,114 @@
+// [[styles.controls]]
+// @what - Styles for inline visualizer controls inside Spicetify menu
+
+.controls {
+	display: grid;
+	gap: 10px;
+	padding: 8px;
+}
+
+.card {
+	background: var(--spice-card, rgba(255, 255, 255, 0.04));
+	border: 1px solid var(--spice-border, rgba(255, 255, 255, 0.08));
+	border-radius: 10px;
+	padding: 10px;
+	display: grid;
+	gap: 8px;
+}
+
+.rowHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.rowTitle {
+	color: var(--spice-text, #fff);
+}
+
+.valuePill {
+	font: inherit;
+	color: var(--spice-text, #cfcfcf);
+	background: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.06));
+	border: 1px solid var(--spice-border, rgba(255, 255, 255, 0.08));
+	border-radius: 999px;
+	padding: 2px 10px;
+}
+
+.line {
+	display: grid;
+	grid-template-columns: 90px 1fr;
+	align-items: center;
+	gap: 8px;
+}
+
+.label {
+	color: var(--spice-subtext, #b3b3b3);
+}
+
+.stepper {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.button {
+	appearance: none;
+	border: 1px solid var(--spice-border, rgba(255, 255, 255, 0.1));
+	background: var(--spice-elevated-base, rgba(255, 255, 255, 0.04));
+	color: var(--spice-text, #fff);
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border-radius: 6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition:
+		background 120ms ease,
+		border-color 120ms ease,
+		transform 80ms ease;
+}
+
+.button:hover {
+	background: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.08));
+}
+
+.button:active {
+	transform: translateY(1px);
+}
+
+.icon {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+}
+
+.value {
+	min-width: 56px;
+	text-align: center;
+	color: var(--spice-text, #fff);
+}
+
+.toolbar {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.resetBtn {
+	appearance: none;
+	border: 1px solid var(--spice-border, rgba(255, 255, 255, 0.1));
+	background: transparent;
+	color: var(--spice-text, #fff);
+	padding: 6px 10px;
+	border-radius: 6px;
+	cursor: pointer;
+	transition:
+		background 120ms ease,
+		border-color 120ms ease;
+}
+
+.resetBtn:hover {
+	background: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.06));
+}

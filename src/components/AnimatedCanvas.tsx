@@ -7,6 +7,9 @@ interface ContextTypeMap {
 	bitmaprenderer: ImageBitmapRenderingContext;
 }
 
+// [[animatedCanvas.surface]]
+// @what - Generic animated canvas component for multiple context types
+// @how - Initializes context + state once, observes size, and runs an RAF render loop when enabled
 export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(props: {
 	contextType: V;
 	onInit: (ctx: ContextTypeMap[V] | null) => U;
@@ -23,10 +26,14 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [state, setState] = useState<U | null>(null);
 
+	// [[animatedCanvas.updateResolution]]
+	// @what - Update canvas resolution based on window size and device pixel ratio
+	// @how - Scale by device pixel ratio to maintain crisp visuals
 	const updateResolution = useCallback((canvas: HTMLCanvasElement, win: Window) => {
 		const screenWidth = Math.round(canvas.clientWidth * window.devicePixelRatio);
 		const screenHeight = Math.round(canvas.clientHeight * window.devicePixelRatio);
 
+		// @optional - sizeConstraint can enforce square or other aspect constraints
 		const { width: newWidth, height: newHeight } = props.sizeConstraint?.(screenWidth, screenHeight) ?? {
 			width: screenWidth,
 			height: screenHeight
@@ -37,6 +44,8 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 		canvas.height = newHeight;
 	}, []);
 
+	// [[animatedCanvas.init]]
+	// @how - Initialize once: create context, init state, do a first resize
 	useEffect(() => {
 		if (!onInit) return;
 
@@ -56,6 +65,8 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 		return () => setState(null);
 	}, [contextType, onInit]);
 
+	// [[animatedCanvas.loop]]
+	// @how - RAF loop only when enabled and after initial state exists
 	useEffect(() => {
 		if (!isEnabled || !state || !onRender) return;
 
@@ -81,6 +92,8 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 		};
 	}, [contextType, onRender, data, state, isEnabled]);
 
+	// [[animatedCanvas.resizeObserver]]
+	// @how - Observe element resize and trigger resolution + onResize(state)
 	useEffect(() => {
 		if (!canvasRef.current) return;
 
@@ -109,8 +122,10 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 			ref={canvasRef}
 			style={{
 				...(style || {}),
+				// @what - Hide canvas when disabled; prevents flashing between renderer switches
 				...(isEnabled ? {} : { visibility: "hidden" })
 			}}
+			className="visualizer-canvas"
 		/>
 	);
 }

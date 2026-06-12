@@ -1,4 +1,4 @@
-export const vertexShader = `#version 300 es
+export const vertexShader = /*glsl*/`#version 300 es
 
 in vec2 inPosition;
 out vec2 fragUV;
@@ -8,7 +8,8 @@ void main() {
     fragUV = (inPosition + 1.0) / 2.0;
 }
 `;
-export const fragmentShader = `#version 300 es
+export const fragmentShader = /*glsl*/`#version 300 es
+
 precision highp float;
 
 uniform float uNoiseOffset;
@@ -23,6 +24,9 @@ uniform float uFeather;
 
 uniform float uNoiseFrequency;
 uniform float uNoiseAmplitude;
+
+// @what - rotation of the XY frame; moves poles along edge
+uniform float uOrbitAngle;
 
 in vec2 fragUV;
 out vec2 outColor;
@@ -98,7 +102,51 @@ float fractalNoise(vec3 coord) {
 
 void main() {
     float noise = fractalNoise(vec3(fragUV * uNoiseFrequency, uNoiseOffset)) * uNoiseAmplitude;
-    vec3 dotCenter = vec3(fragUV * uDotSpacing + uDotOffset + noise, (noise + 0.5 * uNoiseAmplitude) * uAmplitude * 0.4);
+    /*-*
+    // @note - the original code
+    // @what - User a single noise for X/Y, keeps the antipodal poles
+    vec3 dotCenter = vec3(fragUV * uDotSpacing + uDotOffset + noise,
+            (noise + 0.5 * uNoiseAmplitude) * uAmplitude * 0.4);
+    /*-*/
+
+    /*-*/
+    // @note - Option B: rotating poles
+
+    // @what - Single scalar noise (Option B only), then rotate XY by uOrbitAngle
+    ///float noise = fractalNoise(vec3(fragUV * uNoiseFrequency, uNoiseOffset)) * uNoiseAmplitude;
+
+    // @how - Add scalar noise to both axes for base displacement
+    ///vec2 baseXY = fragUV * uDotSpacing + uDotOffset + noise;
+
+    // @how - Rotate the XY frame to move poles antipodally along the edge
+    mat2 R = mat2(cos(uOrbitAngle), -sin(uOrbitAngle),
+                sin(uOrbitAngle),  cos(uOrbitAngle));
+    ///vec2 xy = R * baseXY;
+
+    /*-*
+    // @note - tiny bias to avoid exact XY = 0 edge-cases
+    ///xy += vec2(1.0 / 8192.0, 0.0);
+
+    // @how - Z uses the same scalar noise as before
+    vec3 dotCenter = vec3(xy, (noise + 0.5 * uNoiseAmplitude) * uAmplitude * 0.4);
+
+    /*-*/
+
+    /*-*/
+    // @note - Option A: no poles, freedom of movement
+    // @what - Use two independent noises for X/Y instead of one scalar; removes diagonal bias
+    float noiseX = fractalNoise(vec3(fragUV * uNoiseFrequency, uNoiseOffset)) * uNoiseAmplitude;
+    float noiseY = fractalNoise(vec3(fragUV.yx * (uNoiseFrequency * 1.231), uNoiseOffset + 17.0)) * uNoiseAmplitude;
+
+    ///vec2 xy = R * baseXY + vec2(noiseX, noiseY);
+    vec2 baseXY = fragUV * uDotSpacing + uDotOffset + noise;
+    vec2 xy = baseXY + vec2(noiseX, noiseY);
+
+    // @what - Use the averaged noise for Z modulation
+    float noiseHeight = 0.5 * (noiseX + noiseY);
+    vec3 dotCenter = vec3(xy, (noiseHeight + 0.5 * uNoiseAmplitude) * uAmplitude * 0.4);
+
+    /*-*/
     
     float distanceFromCenter = length(dotCenter);
     dotCenter /= distanceFromCenter;

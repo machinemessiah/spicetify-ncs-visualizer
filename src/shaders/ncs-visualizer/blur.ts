@@ -1,7 +1,7 @@
 // https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-40-incremental-computation-gaussian
 // https://github.com/mozilla/gecko-dev/blob/23808d46cde6155213b1230675b00a0a426f466e/gfx/wr/webrender/res/cs_blur.glsl#L140-L157
 
-export const vertexShader = `#version 300 es
+export const vertexShader = /*glsl*/ `#version 300 es
 
 uniform float uBlurRadius;
 uniform vec2 uBlurDirection;
@@ -23,7 +23,7 @@ float calculateGaussianTotal(int support, vec3 fragGaussCoefficients) {
 }
 
 void main() {
-    fragSupport = int(ceil(1.5 * uBlurRadius)) * 2;
+    fragSupport = int(ceil(1.5 * uBlurRadius)) * 15;//2;
     fragGaussCoefficients = vec3(1.0 / (sqrt(2.0 * 3.14159265) * uBlurRadius), exp(-0.5 / (uBlurRadius * uBlurRadius)), 0.0);
     fragGaussCoefficients.z = fragGaussCoefficients.y * fragGaussCoefficients.y;
     fragGaussCoefficients.x /= calculateGaussianTotal(fragSupport, fragGaussCoefficients);
@@ -33,7 +33,7 @@ void main() {
     fragBlurDirection = uBlurDirection;
 }
 `;
-export const fragmentShader = `#version 300 es
+export const fragmentShader = /*glsl*/ `#version 300 es
 precision highp float;
 
 uniform sampler2D uInputTexture;
