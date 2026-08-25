@@ -144,3 +144,10 @@ out
 # End of https://www.toptal.com/developers/gitignore/api/node
 
 dist
+_BACKUPS/07-07-2026/AfterKimiBlendModesBrokeThings/src/menu.tsx
+_BACKUPS/07-07-2026/AfterKimiBlendModesBrokeThings/src/components/renderer/NCSVisualizer.tsx
+_BACKUPS/07-07-2026/AfterKimiBlendModesBrokeThings/src/config/visualizer.defaults.ts
+_BACKUPS/07-07-2026/AfterKimiBlendModesBrokeThings/src/css/controls.module.scss
+_BACKUPS/07-07-2026/AfterKimiBlendModesBrokeThings/src/shaders/ncs-visualizer/output-composite.ts
+_BACKUPS/07-07-2026/AfterKimiBlendModesBrokeThings/src/types/visualizer-global.d.ts
+.vscode/settings.json

@@ -9,7 +9,7 @@ interface ContextTypeMap {
 
 // [[animatedCanvas.surface]]
 // @what - Generic animated canvas component for multiple context types
-// @how - Initializes context + state once, observes size, and runs an RAF render loop when enabled
+// @how - Initializes context + state once; either locks bitmap size or observes layout for resolution
 export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(props: {
 	contextType: V;
 	onInit: (ctx: ContextTypeMap[V] | null) => U;
@@ -18,18 +18,30 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 
 	style?: React.CSSProperties;
 	sizeConstraint?: (width: number, height: number) => { width: number; height: number };
+	// [[animatedCanvas.fixedResolution]]
+	// @what - lock square bitmap (canvas.width/height) to this size; skip layout/DPR resize thrash
+	// @why - NCS visualizer fits via parent `.visualizer-stage` `scale` instead of reallocating GPU buffers
+	// @note - when set, ResizeObserver is not attached; onResize still runs once after init
+	fixedResolution?: number;
 
 	data: T;
 	isEnabled: boolean;
 }) {
-	const { contextType, onInit, onResize, onRender, style, data, isEnabled } = props;
+	const { contextType, onInit, onResize, onRender, style, data, isEnabled, fixedResolution } = props;
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [state, setState] = useState<U | null>(null);
 
 	// [[animatedCanvas.updateResolution]]
-	// @what - Update canvas resolution based on window size and device pixel ratio
-	// @how - Scale by device pixel ratio to maintain crisp visuals
-	const updateResolution = useCallback((canvas: HTMLCanvasElement, win: Window) => {
+	// @what - Set canvas bitmap size once (fixed) or from layout + DPR (responsive)
+	const updateResolution = useCallback((canvas: HTMLCanvasElement, _win: Window) => {
+		// @how - fixed path: one square buffer forever; visual fit is parent `scale`, not bitmap churn
+		if (typeof fixedResolution === "number" && fixedResolution > 0) {
+			if (canvas.width === fixedResolution && canvas.height === fixedResolution) return;
+			canvas.width = fixedResolution;
+			canvas.height = fixedResolution;
+			return;
+		}
+
 		const screenWidth = Math.round(canvas.clientWidth * window.devicePixelRatio);
 		const screenHeight = Math.round(canvas.clientHeight * window.devicePixelRatio);
 
@@ -42,7 +54,7 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 		if (canvas.width === newWidth && canvas.height === newHeight) return;
 		canvas.width = newWidth;
 		canvas.height = newHeight;
-	}, []);
+	}, [fixedResolution]);
 
 	// [[animatedCanvas.init]]
 	// @how - Initialize once: create context, init state, do a first resize
@@ -63,7 +75,7 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 		setState(state);
 
 		return () => setState(null);
-	}, [contextType, onInit]);
+	}, [contextType, onInit, updateResolution]);
 
 	// [[animatedCanvas.loop]]
 	// @how - RAF loop only when enabled and after initial state exists
@@ -94,7 +106,9 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 
 	// [[animatedCanvas.resizeObserver]]
 	// @how - Observe element resize and trigger resolution + onResize(state)
+	// @note - skipped when fixedResolution is set (bitmap never changes; stage `scale` handles fit)
 	useEffect(() => {
+		if (typeof fixedResolution === "number" && fixedResolution > 0) return;
 		if (!canvasRef.current) return;
 
 		const win = canvasRef.current.ownerDocument.defaultView;
@@ -115,7 +129,7 @@ export default function AnimatedCanvas<T, U, V extends keyof ContextTypeMap>(pro
 
 		resizeObserver.observe(canvasRef.current);
 		return () => resizeObserver.disconnect();
-	}, [contextType, onResize, state]);
+	}, [contextType/*, onResize*/, state, fixedResolution, updateResolution]);
 
 	return (
 		<canvas

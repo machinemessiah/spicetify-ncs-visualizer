@@ -1,0 +1,63 @@
+.studio-module__segmentTrackWrap___YzZXC_visualizer .studio-module__segmentPill___44ag2_visualizer {
+	min-width: unset;
+	aspect-ratio: 1;
+	grid-column: span 1;
+	color: var(--mm-studio-text);
+	box-shadow: 2px 5px 15px 1px rgb(from var(--mm-studio-accent-muted) r g b / 0.2) inset;
+	background: linear-gradient(135deg, rgb(from var(--mm-studio-accent-muted) r g b / 0.1), transparent);
+	outline: 1px solid rgb(from var(--mm-studio-accent-muted) r g b / 0.1);
+	outline-offset: -2px;
+	border: none !important;
+
+	transition: 220ms linear;
+	transition-property: outline, background, box-shadow;
+}
+
+.studio-module__segmentTrackWrap___YzZXC_visualizer {
+	border-radius: var(--mm-studio-button-border-radius);
+	gap: 2px;
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	grid-template-rows: 1fr;
+}
+.studio-module__segmentTrackWrap___YzZXC_visualizer .studio-module__segmentPill___44ag2_visualizer:hover {
+	color: var(--mm-studio-text);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--mm-studio-section-accent) 18%, transparent),
+		color-mix(in srgb, var(--mm-studio-section-accent) 6%, transparent)
+	);
+	outline-color: color-mix(in srgb, var(--mm-studio-section-accent) 25%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 8%, transparent) inset,
+		0 0 16px color-mix(in srgb, var(--mm-studio-section-accent) 10%, transparent);
+	--mm-shape-cutout: color-mix(in srgb, var(--mm-studio-section-accent) 12%, transparent);
+}
+
+.studio-module__segmentTrackWrap___YzZXC_visualizer
+	.studio-module__segmentPill___44ag2_visualizer.studio-module__segmentPillActive___U5PsK_visualizer {
+	color: var(--mm-studio-text);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--mm-studio-section-accent) 38%, transparent),
+		color-mix(in srgb, var(--mm-studio-section-accent) 16%, transparent)
+	);
+	outline-color: color-mix(in srgb, var(--mm-studio-section-accent) 45%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 8%, transparent) inset,
+		0 0 16px color-mix(in srgb, var(--mm-studio-section-accent) 20%, transparent);
+	--mm-shape-cutout: color-mix(in srgb, var(--mm-studio-section-accent) 22%, transparent);
+}
+
+.studio-module__shapeGlyph___tmva1_visualizer {
+	aspect-ratio: 1;
+	width: 17px;
+	height: 17px;
+}
+.studio-module__shapeGlyph___tmva1_visualizer[data-shape]::after {
+	background: rgb(from var(--mm-studio-glass-rail) r g b / 1);
+}
+.studio-module__shapeGlyph___tmva1_visualizer[data-shape='triangle'] {
+	width: 20px;
+	height: 20px;
+}

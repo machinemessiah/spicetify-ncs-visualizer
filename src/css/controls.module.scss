@@ -52,6 +52,39 @@
 	gap: 6px;
 }
 
+// [[styles.segmentGroup]]
+// @what - Full-width segmented toggle that fills the stepper column (e.g. dotRadiusMode)
+.segmentGroup {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	gap: 6px;
+}
+
+.segmentBtn {
+	appearance: none;
+	flex: 1;
+	border: 1px solid var(--spice-border, rgba(255, 255, 255, 0.1));
+	background: transparent;
+	color: var(--spice-text, #fff);
+	padding: 6px 10px;
+	border-radius: 999px;
+	cursor: pointer;
+	transition:
+		background 120ms ease,
+		border-color 120ms ease;
+}
+
+.segmentBtn:hover {
+	background: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.06));
+}
+
+// @what - Active segment matching the current config value
+.segmentActive {
+	background: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.1));
+	border-color: var(--spice-text, #fff);
+}
+
 .button {
 	appearance: none;
 	border: 1px solid var(--spice-border, rgba(255, 255, 255, 0.1));
@@ -69,6 +102,8 @@
 		background 120ms ease,
 		border-color 120ms ease,
 		transform 80ms ease;
+
+	overflow: hidden;
 }
 
 .button:hover {
@@ -111,4 +146,114 @@
 
 .resetBtn:hover {
 	background: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.06));
+}
+
+// [[styles.configManager]]
+// [[@components.configManager]]
+// @when - 06-12-2026
+// @what - Styles for the named-config manager (save dialog, configs dropdown, current-name item)
+
+// @what - Scrollable list of saved configs inside the CONFIGS submenu
+// @why - Keeps the dropdown inside the viewport no matter how many configs are saved
+.configList {
+	max-height: 40vh;
+	min-width: 220px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+// @what - Highlight for the currently loaded config in the list
+.loadedConfig {
+	color: var(--spice-button-active, #1ed760);
+	font-weight: 700;
+}
+
+// [[styles.blendModeList]]
+// @what - Scrollable list of overlay blend modes inside the Overlay Blend submenu
+// @why - Keeps the context menu inside the viewport no matter how many blend modes are supported
+.blendModeList {
+	max-height: 40vh;
+	min-width: 220px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+// @what - Highlight for the currently active blend mode in the list
+.activeBlendMode {
+	color: var(--spice-button-active, #1ed760);
+	font-weight: 700;
+}
+
+// @what - Dimmed style for the "[ unsaved config ]" placeholder name
+.unsavedName {
+	color: var(--spice-subtext, #b3b3b3);
+	font-style: italic;
+}
+
+// @what - Wrapper for the inline rename input so it lines up with menu items
+.currentName {
+	padding: 8px 12px;
+}
+
+// @what - PopupModal dialog layout (save + confirm)
+.dialog {
+	display: grid;
+	gap: 12px;
+	padding: 8px;
+	min-width: 320px;
+}
+
+.dialogModes {
+	display: flex;
+	gap: 8px;
+}
+
+.modeButton {
+	appearance: none;
+	flex: 1;
+	border: 1px solid var(--spice-border, rgba(255, 255, 255, 0.1));
+	background: transparent;
+	color: var(--spice-text, #fff);
+	padding: 6px 10px;
+	border-radius: 6px;
+	cursor: pointer;
+	transition:
+		background 120ms ease,
+		border-color 120ms ease;
+}
+
+.modeButton:hover {
+	background: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.06));
+}
+
+// @what - Active overwrite/new mode toggle state
+.modeActive {
+	background: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.1));
+	border-color: var(--spice-text, #fff);
+}
+
+.dialogInput {
+	width: 100%;
+	background: var(--spice-elevated-base, rgba(255, 255, 255, 0.04));
+	color: var(--spice-text, #fff);
+	border: 1px solid var(--spice-border, rgba(255, 255, 255, 0.1));
+	border-radius: 6px;
+	padding: 8px 10px;
+	outline: none;
+}
+
+.dialogInput:focus {
+	border-color: var(--spice-text, #fff);
+}
+
+// @what - Inline validation message (invalid chars / duplicate name / empty)
+.dialogError {
+	color: var(--spice-notification-error, #e91429);
+	font-size: 0.85em;
+}
+
+.dialogActions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
 }

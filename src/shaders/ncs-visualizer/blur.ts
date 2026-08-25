@@ -4,6 +4,12 @@
 export const vertexShader = /*glsl*/ `#version 300 es
 
 uniform float uBlurRadius;
+// [[blur.uBlurKernelQuality]]
+// @what - tap-count multiplier after radius sizing (from window.visualizer.blurKernelQuality)
+// @how - fragSupport = ceil(1.5 * uBlurRadius) * int(uBlurKernelQuality)
+// @purpose - more taps along the blur axis = creamier bloom; fewer = cheaper/crisper
+// @note - 1.5 * radius sizes the kernel to the blur width; quality then densifies samples inside that width
+uniform float uBlurKernelQuality;
 uniform vec2 uBlurDirection;
 
 in vec2 inPosition;
@@ -23,7 +29,9 @@ float calculateGaussianTotal(int support, vec3 fragGaussCoefficients) {
 }
 
 void main() {
-    fragSupport = int(ceil(1.5 * uBlurRadius)) * 15;//2;
+    // @what - sample budget for the separable Gaussian along uBlurDirection
+    // @meaning - higher uBlurKernelQuality → smoother spatial blur, more GPU cost
+    fragSupport = int(ceil(1.5 * uBlurRadius)) * int(uBlurKernelQuality);
     fragGaussCoefficients = vec3(1.0 / (sqrt(2.0 * 3.14159265) * uBlurRadius), exp(-0.5 / (uBlurRadius * uBlurRadius)), 0.0);
     fragGaussCoefficients.z = fragGaussCoefficients.y * fragGaussCoefficients.y;
     fragGaussCoefficients.x /= calculateGaussianTotal(fragSupport, fragGaussCoefficients);

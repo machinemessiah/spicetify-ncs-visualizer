@@ -8,7 +8,7 @@ import { ColorResult } from "./protobuf/ColorResult";
 import { ErrorData, ErrorHandlerContext, ErrorRecovery } from "./error";
 import DebugVisualizer from "./components/renderer/DebugVisualizer";
 import SpectrumVisualizer from "./components/renderer/SpectrumVisualizer";
-import { MainMenuButton } from "./menu";
+import VisualizerStudio, { StudioToggleButton } from "./components/VisualizerStudio";
 import { createVisualizerWindow } from "./window";
 
 export type RendererProps = {
@@ -16,6 +16,7 @@ export type RendererProps = {
 	themeColor: Spicetify.Color;
 	audioAnalysis?: SpotifyAudioAnalysis;
 	rotation?: number;
+	useSongPalette: boolean;
 };
 
 export type RendererDefinition = {
@@ -58,6 +59,14 @@ type VisualizerState =
 export default function App(props: { isSecondaryWindow?: boolean; initialRenderer?: string }) {
 	// @value (rendererId) - currently selected renderer id from menu or initial prop
 	const [rendererId, setRendererId] = useState<string>(props.initialRenderer || "ncs");
+	// @when - 06-20-2026
+	// @what - React-owned toggle for live song/default palette switching
+	// @why - mutating `window.*` alone does not trigger rerenders
+	const [useSongPalette, setUseSongPalette] = useState<boolean>(() => window.visualizerUseSongPalette ?? false);
+	// [[app.studioOpen]]
+	// @what - right-dock Studio panel visibility (persists only in-session)
+	// @how - flips data-studio-open; CSS owns stage scale + panel translate (no ResizeObserver)
+	const [studioOpen, setStudioOpen] = useState(false);
 	const Renderer = RENDERERS.find(v => v.id === rendererId)?.renderer;
 
 	// @values - visualizer state and track-dependent data (audio analysis + theme color)
@@ -89,6 +98,19 @@ export default function App(props: { isSecondaryWindow?: boolean; initialRendere
 	}, []);
 
 	const isUnrecoverableError = state.state === "error" && state.errorData.recovery === ErrorRecovery.NONE;
+
+	// @when - 06-20-2026
+	// @what - Keep global bridge value aligned for non-React readers
+	// @how - write the currently active React state into `window.visualizerUseSongPalette`
+	useEffect(() => {
+		window.visualizerUseSongPalette = useSongPalette;
+	}, [useSongPalette]);
+
+	// [[app.palette.toggle]]
+	// @what - Menu callback to immediately swap between runtime song palette and default css palette
+	const onToggleSongPalette = useCallback(() => {
+		setUseSongPalette(v => !v);
+	}, []);
 
 	// [[app.metadata]]
 	// @what - Service to fetch extracted album art color via Spotify's internal metadata APIs
@@ -192,31 +214,46 @@ export default function App(props: { isSecondaryWindow?: boolean; initialRendere
 	}, [isUnrecoverableError, updatePlayerState]);
 
 	// [[app.ui]]
-	// @what - Render active renderer + menu button (hidden in secondary window), and error/loading UI
+	// @when - 07-27-2026
+	// @what - Stage + Studio dock; secondary window has no studio chrome
+	// @note - Studio panel stays mounted; data-studio-open drives CSS scale + translate only
 	return (
-		<div className="visualizer-container">
+		<div
+			className="visualizer-container"
+			data-studio-open={studioOpen && !props.isSecondaryWindow ? "true" : "false"}
+		>
 			{!isUnrecoverableError && (
 				<>
-					<ErrorHandlerContext.Provider value={onError}>
-						{Renderer && (
-							<Renderer
-								isEnabled={state.state === "running"}
-								audioAnalysis={trackData.audioAnalysis}
-								themeColor={trackData.themeColor}
-							/>
-						)}
-					</ErrorHandlerContext.Provider>
+					<div className="visualizer-stage">
+						<ErrorHandlerContext.Provider value={onError}>
+							{Renderer && (
+								<Renderer
+									isEnabled={state.state === "running"}
+									audioAnalysis={trackData.audioAnalysis}
+									themeColor={trackData.themeColor}
+									useSongPalette={useSongPalette}
+								/>
+							)}
+						</ErrorHandlerContext.Provider>
+					</div>
 					{props.isSecondaryWindow || (
-						<MainMenuButton
-							className={styles.main_menu_button}
-							renderers={RENDERERS}
-							onOpenWindow={() => {
-								if (!createVisualizerWindow(rendererId)) {
-									Spicetify.showNotification("Failed to open a new window", true);
-								}
-							}}
-							onSelectRenderer={id => setRendererId(id)}
-						/>
+						<>
+							<StudioToggleButton
+								open={studioOpen}
+								onToggle={() => setStudioOpen((v) => !v)}
+							/>
+							<VisualizerStudio
+								open={studioOpen}
+								onOpenChange={setStudioOpen}
+								useSongPalette={useSongPalette}
+								onToggleSongPalette={onToggleSongPalette}
+								onOpenWindow={() => {
+									if (!createVisualizerWindow(rendererId)) {
+										Spicetify.showNotification("Failed to open a new window", true);
+									}
+								}}
+							/>
+						</>
 					)}
 				</>
 			)}

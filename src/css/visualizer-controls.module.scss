@@ -1,0 +1,321 @@
+// [[styles.visualizerControls]]
+// [[@menu.controls.inline]]
+// @when - 07-26-2026
+// @what - Modernized in-menu visualizer controls (collapsible sections, dirty/revert)
+// @!note - CSS custom properties only; no SCSS variables
+
+.root {
+	--vc-gap: 8px;
+	--vc-pad: 8px;
+	--vc-radius: 10px;
+	--vc-radius-pill: 999px;
+	--vc-dirty: var(--spice-button-active, #1ed760);
+	--vc-muted: var(--spice-subtext, #b3b3b3);
+	--vc-text: var(--spice-text, #fff);
+	--vc-border: var(--spice-border, rgba(255, 255, 255, 0.1));
+	--vc-surface: var(--spice-card, rgba(255, 255, 255, 0.04));
+	--vc-elevated: var(--spice-elevated-highlight, rgba(255, 255, 255, 0.08));
+	--vc-max-h: 55vh;
+
+	display: grid;
+	gap: var(--vc-gap);
+	padding: var(--vc-pad);
+	max-height: var(--vc-max-h);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	min-width: 280px;
+}
+
+.header {
+	display: grid;
+	gap: 6px;
+	padding: 8px 10px;
+	background: var(--vc-surface);
+	border: 1px solid var(--vc-border);
+	border-radius: var(--vc-radius);
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	backdrop-filter: blur(8px);
+}
+
+.headerTop {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.basedOn {
+	color: var(--vc-text);
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 180px;
+}
+
+.basedOnUnsaved {
+	color: var(--vc-muted);
+	font-style: italic;
+	font-weight: 400;
+}
+
+.dirtyCount {
+	font-size: 0.85em;
+	color: var(--vc-dirty);
+	white-space: nowrap;
+}
+
+.headerActions {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.actionBtn {
+	appearance: none;
+	border: 1px solid var(--vc-border);
+	background: transparent;
+	color: var(--vc-text);
+	padding: 4px 10px;
+	border-radius: var(--vc-radius-pill);
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.85em;
+	transition:
+		background 120ms ease,
+		border-color 120ms ease;
+}
+
+.actionBtn:hover {
+	background: var(--vc-elevated);
+}
+
+.actionBtn:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.section {
+	background: var(--vc-surface);
+	border: 1px solid var(--vc-border);
+	border-radius: var(--vc-radius);
+	overflow: hidden;
+}
+
+.sectionToggle {
+	appearance: none;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 10px;
+	border: none;
+	background: transparent;
+	color: var(--vc-text);
+	cursor: pointer;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+}
+
+.sectionToggle:hover {
+	background: var(--vc-elevated);
+}
+
+.sectionChevron {
+	color: var(--vc-muted);
+	font-size: 0.85em;
+	transition: transform 120ms ease;
+}
+
+.sectionOpen .sectionChevron {
+	transform: rotate(90deg);
+}
+
+.sectionBody {
+	display: grid;
+	gap: 8px;
+	padding: 0 10px 10px;
+}
+
+.card {
+	display: grid;
+	gap: 6px;
+	padding: 8px;
+	border: 1px solid var(--vc-border);
+	border-radius: 8px;
+	background: rgba(0, 0, 0, 0.12);
+}
+
+.cardDirty {
+	border-color: color-mix(in srgb, var(--vc-dirty) 55%, var(--vc-border));
+}
+
+.rowHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.rowTitle {
+	color: var(--vc-text);
+	font-weight: 500;
+}
+
+.valuePill {
+	font: inherit;
+	font-size: 0.85em;
+	color: var(--vc-muted);
+	background: var(--vc-elevated);
+	border: 1px solid var(--vc-border);
+	border-radius: var(--vc-radius-pill);
+	padding: 2px 8px;
+}
+
+.line {
+	display: grid;
+	grid-template-columns: 72px 1fr auto;
+	align-items: center;
+	gap: 6px;
+}
+
+.lineDirty {
+	// @what - subtle left accent when this row differs from baseline
+	box-shadow: inset 2px 0 0 var(--vc-dirty);
+	padding-left: 4px;
+	margin-left: -4px;
+}
+
+.label {
+	color: var(--vc-muted);
+	font-size: 0.9em;
+}
+
+.stepper {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+}
+
+.segmentGroup {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	gap: 6px;
+}
+
+.segmentBtn {
+	appearance: none;
+	flex: 1;
+	border: 1px solid var(--vc-border);
+	background: transparent;
+	color: var(--vc-text);
+	padding: 5px 8px;
+	border-radius: var(--vc-radius-pill);
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.85em;
+	transition:
+		background 120ms ease,
+		border-color 120ms ease;
+}
+
+.segmentBtn:hover {
+	background: var(--vc-elevated);
+}
+
+.segmentActive {
+	background: var(--vc-elevated);
+	border-color: var(--vc-text);
+}
+
+.button {
+	appearance: none;
+	border: 1px solid var(--vc-border);
+	background: rgba(255, 255, 255, 0.04);
+	color: var(--vc-text);
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border-radius: 6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition:
+		background 120ms ease,
+		transform 80ms ease;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.button:hover {
+	background: var(--vc-elevated);
+}
+
+.button:active {
+	transform: translateY(1px);
+}
+
+.icon {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+}
+
+.value {
+	min-width: 44px;
+	text-align: center;
+	color: var(--vc-text);
+	font-variant-numeric: tabular-nums;
+}
+
+.delta {
+	font-size: 0.75em;
+	color: var(--vc-dirty);
+	white-space: nowrap;
+	margin-left: 2px;
+}
+
+.revertBtn {
+	appearance: none;
+	border: 1px solid var(--vc-border);
+	background: transparent;
+	color: var(--vc-muted);
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border-radius: 6px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.revertBtn:hover {
+	color: var(--vc-dirty);
+	border-color: var(--vc-dirty);
+	background: color-mix(in srgb, var(--vc-dirty) 12%, transparent);
+}
+
+.resetBtn {
+	appearance: none;
+	border: 1px solid var(--vc-border);
+	background: transparent;
+	color: var(--vc-text);
+	padding: 6px 10px;
+	border-radius: 6px;
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.85em;
+}
+
+.resetBtn:hover {
+	background: var(--vc-elevated);
+}

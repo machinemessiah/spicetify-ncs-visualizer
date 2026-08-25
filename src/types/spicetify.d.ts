@@ -1440,7 +1440,7 @@ declare namespace Spicetify {
 			/**
 			 * Determine whether the tooltip should be displayed
 			 */
-			disabled?: boolean;
+			disabled: boolean;
 			/**
 			 * The preferred placement of the context menu when it opens.
 			 * Relative to trigger element.

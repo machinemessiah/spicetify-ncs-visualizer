@@ -1,21 +1,56 @@
+@property --mm-stage-scale {
+	initial: 1;
+	syntax: "<number>";
+	inherits: true;
+}
+
 :global(.visualizer-container) {
 	// fill available space
 	position: absolute;
 	inset: 0;
+
+	// [[app.studioTokens]]
+	// @what - shared dock + stage tokens; open/close only flips data-studio-open
+	// @note - width/gap declared once here; panel inherits (no second copy)
+	--mm-studio-width: min(450px, 42vw);
+	--mm-studio-outside-gap: calc(var(--panel-gap, 8px) * 3);
+	// @what - fit scale for fixed 1440 canvas (CSS-only; window-fit math can come later)
+	--mm-stage-scale: 1;
+	// @what - panel slide: off to the right when closed, docked when open
+	--mm-studio-translate: calc(var(--mm-studio-width) + var(--mm-studio-outside-gap)) 0;
+
+	&[data-studio-open="true"] {
+		--mm-studio-translate: 0 0;
+	}
 }
 
-:global(.visualizer-container) > *:not(.main_menu_button) {
+// [[app.visualizerStage]]
+// @purpose - Stage hosts the renderer; visual fit is `scale` only (bitmap stays 1440)
+// @how - data-studio-open toggles --mm-stage-scale; no JS style writes on open/close
+:global(.visualizer-stage) {
 	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	display: grid;
+	place-items: center;
 
+	transform-origin: center center;
+	transition: scale 220ms ease;
+	will-change: scale;
+	scale: var(--mm-stage-scale, 1);
+}
+
+:global(.visualizer-container[data-studio-open="true"] .visualizer-stage) {
+	// @why - shrink toward the left so the dock on the right keeps clear space
+	transform-origin: left center;
+	--mm-stage-scale: 0.65;
+}
+
+:global(.visualizer-stage) > * {
+	position: absolute;
 	top: 50%;
 	left: 50%;
 	translate: -50% -50%;
-}
-
-.main_menu_button {
-	position: absolute;
-	top: 10px;
-	right: 10px;
 }
 
 .error_container {
@@ -26,6 +61,13 @@
 
 	align-items: center;
 	gap: 2rem;
+	z-index: 5;
+
+	// @why - to center the error container
+	// @todo - find out why this is appearing off center since we switched to the studio UI
+	position: absolute;
+	inset: 50% 50% 0 0;
+	translate: 50% -5%;
 }
 
 .error_message {

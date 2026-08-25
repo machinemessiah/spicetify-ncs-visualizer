@@ -1,0 +1,1239 @@
+// [[styles.studio]]
+// [[@components.visualizerStudio]]
+// @when - 07-27-2026
+// @what - Custom right-dock Studio panel chrome (no Spicetify ContextMenu/Modal)
+// @!note - CSS custom properties only; no SCSS variables
+
+.panel {
+	// @what - studio chrome tokens
+	// @note - --mm-studio-width / --mm-studio-outside-gap inherit from .visualizer-container
+	--mm-studio-bg: color-mix(in srgb, var(--spice-main, #121212) 72%, transparent);
+	--mm-studio-border: color-mix(in srgb, var(--spice-text, #fff) 14%, transparent);
+	--mm-studio-text: var(--spice-text, #fff);
+	--mm-studio-accent-muted: var(--spice-subtext, #b3b3b3);
+	--mm-studio-muted: var(--spice-subtext, #b3b3b3);
+	// @what - default accent is muted; dirty lines bump to spice-button-active
+	--mm-studio-accent: var(--mm-studio-accent-muted, #1ed760);
+	--mm-studio-elevated: color-mix(in srgb, var(--spice-text, #fff) 10%, transparent);
+	--mm-studio-glass: color-mix(in srgb, var(--spice-main, #121212) 55%, transparent);
+	--mm-studio-glass-strong: color-mix(in srgb, var(--spice-main, #121212) 40%, transparent);
+	--mm-studio-radius: 14px;
+	--mm-studio-gap: 10px;
+	--mm-studio-button-border-radius: 8px;
+	--mm-studio-section-accent: var(--mm-studio-accent);
+
+	// @what - the CSS var used for the width/height of the svg icons in the panel
+	// @why - the TS produces this undefined encore variant that we need to override
+	// @todo - find out why the correct variant isn't being generated (e.g. --encore-graphic-size-decorative-smaller)
+	--encore-graphic-size-decorative-undefined: var(--encore-graphic-size-decorative-smaller, 16px);
+
+	position: absolute;
+	top: calc(var(--top-bar-height) + var(--controls-height) + var(--mm-studio-outside-gap));
+	right: var(--mm-studio-outside-gap);
+	bottom: calc(var(--player-bar-height) + var(--mm-studio-outside-gap));
+	width: var(--mm-studio-width);
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	background: var(--mm-studio-bg);
+	border: 1px solid var(--mm-studio-border);
+	border-radius: var(--mm-studio-radius);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 4%, transparent) inset,
+		0 12px 40px rgba(0, 0, 0, 0.45);
+	color: var(--mm-studio-text);
+	font: inherit;
+
+	// [[styles.studio.slide]]
+	// @what - slide off-screen when closed; container --mm-studio-translate from data-studio-open
+	// @why - keep panel mounted once; open/close is one attribute flip + CSS transition
+	translate: var(--mm-studio-translate, 100% 0);
+	transition: translate 220ms linear;
+	pointer-events: none;
+	will-change: translate;
+
+	// @what - accept clicks only while docked open
+	:global(.visualizer-container[data-studio-open='true']) & {
+		pointer-events: auto;
+	}
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 14px 14px 8px;
+	flex-shrink: 0;
+}
+
+.title {
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	font-size: 0.95rem;
+}
+
+.closeBtn,
+.toggleBtn {
+	appearance: none;
+	border: 1px solid var(--mm-studio-border);
+	background: color-mix(in srgb, var(--spice-text, #fff) 6%, transparent);
+	color: var(--mm-studio-text);
+	width: 36px;
+	height: 36px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		opacity 140ms ease,
+		transform 140ms ease;
+}
+
+.closeBtn:hover,
+.toggleBtn:hover {
+	background: var(--mm-studio-elevated);
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 40%, var(--mm-studio-border));
+}
+
+.closeBtn:active,
+.toggleBtn:active {
+	transform: scale(0.94);
+}
+
+.toggleBtn {
+	appearance: none;
+	border: 1px solid var(--mm-studio-border, rgba(255, 255, 255, 0.1));
+	background: color-mix(in srgb, var(--spice-main, #121212) 70%, transparent);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	color: var(--mm-studio-text, #fff);
+	width: 40px;
+	height: 40px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	position: absolute;
+	right: 12px;
+	z-index: 25;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		opacity 140ms ease,
+		right 220ms ease,
+		transform 140ms ease;
+}
+
+.toggleBtn:hover {
+	background: var(--mm-studio-elevated, rgba(255, 255, 255, 0.08));
+}
+
+.toggleOpen {
+	opacity: 1;
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 50%, var(--mm-studio-border));
+	background: color-mix(in srgb, var(--mm-studio-accent) 18%, transparent);
+}
+
+.tabs {
+	display: flex;
+	gap: 6px;
+	padding: 0 12px 10px;
+	flex-shrink: 0;
+}
+
+.tab {
+	appearance: none;
+	flex: 1;
+	border: 1px solid var(--mm-studio-border);
+	background: color-mix(in srgb, var(--spice-text, #fff) 3%, transparent);
+	color: var(--mm-studio-muted);
+	padding: 7px 10px;
+	border-radius: 999px;
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	transition:
+		background 140ms ease,
+		color 140ms ease,
+		border-color 140ms ease,
+		box-shadow 140ms ease;
+}
+
+.tab:hover {
+	background: var(--mm-studio-elevated);
+	color: var(--mm-studio-text);
+}
+
+.tabActive {
+	background: color-mix(in srgb, var(--mm-studio-accent) 20%, transparent);
+	color: var(--mm-studio-text);
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 55%, var(--mm-studio-border));
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--mm-studio-accent) 25%, transparent);
+}
+
+.body {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 0 12px 16px;
+	display: grid;
+	gap: var(--mm-studio-gap);
+	align-content: start;
+
+	// @why - the scrollbar looks ugly
+	// @todo - add sticky top and bottom with box-shadow to indicate whether there is more content to scroll
+	scrollbar-width: none;
+}
+
+.sessionBar {
+	display: grid;
+	gap: 10px;
+	padding: 12px;
+	border: 1px solid color-mix(in srgb, var(--spice-text, #fff) 12%, transparent);
+	border-radius: 16px;
+	background:
+		linear-gradient(165deg, color-mix(in srgb, var(--spice-text, #fff) 10%, transparent), transparent 42%),
+		color-mix(in srgb, var(--spice-main, #121212) 48%, transparent);
+	backdrop-filter: blur(20px) saturate(1.2);
+	-webkit-backdrop-filter: blur(20px) saturate(1.2);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 6%, transparent) inset,
+		0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.sessionMeta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	min-width: 0;
+}
+
+.sessionActions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.basedOn {
+	font-weight: 650;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	letter-spacing: 0.01em;
+}
+
+.basedOnUnsaved {
+	color: var(--mm-studio-muted);
+	font-style: italic;
+	font-weight: 400;
+}
+
+.dirtyBadge {
+	flex-shrink: 0;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--mm-studio-accent);
+	white-space: nowrap;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--mm-studio-accent) 16%, transparent);
+	border: 1px solid color-mix(in srgb, var(--mm-studio-accent) 40%, transparent);
+	box-shadow: 0 0 16px color-mix(in srgb, var(--mm-studio-accent) 18%, transparent);
+}
+
+.dirtyCount {
+	font-size: 0.8rem;
+	color: var(--mm-studio-accent);
+	white-space: nowrap;
+}
+
+.sessionCapsule {
+	appearance: none;
+	border: 1px solid color-mix(in srgb, var(--spice-text, #fff) 14%, transparent);
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--spice-text, #fff) 12%, transparent), transparent),
+		color-mix(in srgb, var(--spice-text, #fff) 4%, transparent);
+	color: var(--mm-studio-text);
+	padding: 8px 14px;
+	border-radius: 999px;
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.8rem;
+	font-weight: 600;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	transition:
+		background 150ms ease,
+		border-color 150ms ease,
+		box-shadow 150ms ease,
+		transform 120ms ease;
+}
+
+.sessionCapsule:hover:not(:disabled) {
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--spice-text, #fff) 16%, transparent), transparent),
+		color-mix(in srgb, var(--spice-text, #fff) 8%, transparent);
+	border-color: color-mix(in srgb, var(--spice-text, #fff) 28%, transparent);
+}
+
+.sessionCapsule:active:not(:disabled) {
+	transform: scale(0.96);
+}
+
+.sessionCapsule:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+.sessionCapsulePrimary {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--mm-studio-accent) 42%, transparent),
+		color-mix(in srgb, var(--mm-studio-accent) 18%, transparent)
+	);
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 55%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--mm-studio-accent) 20%, transparent) inset,
+		0 0 22px color-mix(in srgb, var(--mm-studio-accent) 22%, transparent);
+}
+
+.sessionCapsulePrimary:hover:not(:disabled) {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--mm-studio-accent) 55%, transparent),
+		color-mix(in srgb, var(--mm-studio-accent) 26%, transparent)
+	);
+}
+
+.rowActions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.actionBtn {
+	appearance: none;
+	border: 1px solid var(--mm-studio-border);
+	background: color-mix(in srgb, var(--spice-text, #fff) 4%, transparent);
+	color: var(--mm-studio-text);
+	padding: 6px 12px;
+	border-radius: 999px;
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.82rem;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		transform 120ms ease;
+}
+
+.actionBtn:hover {
+	background: var(--mm-studio-elevated);
+	border-color: color-mix(in srgb, var(--spice-text, #fff) 28%, transparent);
+}
+
+.actionBtn:active {
+	transform: scale(0.97);
+}
+
+.actionBtn:disabled {
+	opacity: 0.4;
+	cursor: default;
+	transform: none;
+}
+
+.actionPrimary {
+	background: color-mix(in srgb, var(--mm-studio-accent) 24%, transparent);
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 55%, var(--mm-studio-border));
+	color: var(--mm-studio-text);
+}
+
+.actionPrimary:hover {
+	background: color-mix(in srgb, var(--mm-studio-accent) 34%, transparent);
+}
+
+.search {
+	width: 100%;
+	box-sizing: border-box;
+	background: color-mix(in srgb, var(--spice-text, #fff) 5%, transparent);
+	color: var(--mm-studio-text);
+	border: 1px solid var(--mm-studio-border);
+	border-radius: 10px;
+	padding: 9px 12px;
+	outline: none;
+	font: inherit;
+	transition:
+		border-color 140ms ease,
+		background 140ms ease;
+}
+
+.search:focus {
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 55%, var(--mm-studio-border));
+	background: color-mix(in srgb, var(--spice-text, #fff) 7%, transparent);
+}
+
+.configList {
+	display: grid;
+	gap: 4px;
+	max-height: none;
+}
+
+.configRow {
+	appearance: none;
+	width: 100%;
+	text-align: left;
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--mm-studio-text);
+	padding: 9px 11px;
+	border-radius: 10px;
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.88rem;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease;
+}
+
+.configRow:hover {
+	background: var(--mm-studio-elevated);
+	border-color: var(--mm-studio-border);
+}
+
+.configActive {
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 60%, var(--mm-studio-border));
+	background: color-mix(in srgb, var(--mm-studio-accent) 14%, transparent);
+	color: var(--mm-studio-accent);
+	font-weight: 700;
+}
+
+.saveSheet {
+	display: grid;
+	gap: 8px;
+	padding: 10px;
+	border: 1px solid var(--mm-studio-border);
+	border-radius: var(--mm-studio-radius);
+	background: var(--mm-studio-glass);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+}
+
+.modeRow {
+	display: flex;
+	gap: 6px;
+}
+
+.modeBtn {
+	appearance: none;
+	flex: 1;
+	border: 1px solid var(--mm-studio-border);
+	background: color-mix(in srgb, var(--spice-text, #fff) 3%, transparent);
+	color: var(--mm-studio-text);
+	padding: 7px 8px;
+	border-radius: 999px;
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.8rem;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		color 140ms ease;
+}
+
+.modeBtn:hover {
+	background: var(--mm-studio-elevated);
+}
+
+.modeActive {
+	background: color-mix(in srgb, var(--mm-studio-accent) 20%, transparent);
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 55%, var(--mm-studio-border));
+	color: var(--mm-studio-accent);
+	font-weight: 600;
+}
+
+.error {
+	color: var(--spice-notification-error, #e91429);
+	font-size: 0.82rem;
+}
+
+.sectionLabel {
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--mm-studio-muted);
+	margin-top: 4px;
+}
+
+.blendGrid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 6px;
+}
+
+.blendChip {
+	appearance: none;
+	border: 1px solid var(--mm-studio-border);
+	background: color-mix(in srgb, var(--spice-text, #fff) 3%, transparent);
+	color: var(--mm-studio-text);
+	padding: 8px 10px;
+	border-radius: 10px;
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.78rem;
+	text-align: left;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		transform 120ms ease;
+}
+
+.blendChip:hover {
+	background: var(--mm-studio-elevated);
+	border-color: color-mix(in srgb, var(--spice-text, #fff) 28%, transparent);
+}
+
+.blendChip:active {
+	transform: scale(0.98);
+}
+
+.blendActive {
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 60%, var(--mm-studio-border));
+	background: color-mix(in srgb, var(--mm-studio-accent) 16%, transparent);
+	color: var(--mm-studio-accent);
+	font-weight: 600;
+}
+
+.segmentGroup {
+	display: flex;
+	gap: 6px;
+}
+
+.segmentBtn {
+	appearance: none;
+	flex: 1;
+	border: 1px solid var(--mm-studio-border);
+	background: color-mix(in srgb, var(--spice-text, #fff) 3%, transparent);
+	color: var(--mm-studio-text);
+	padding: 8px 10px;
+	border-radius: 999px;
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.85rem;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		color 140ms ease,
+		transform 120ms ease;
+}
+
+.segmentBtn:hover {
+	background: var(--mm-studio-elevated);
+}
+
+.segmentBtn:active {
+	transform: scale(0.97);
+}
+
+.segmentActive {
+	background: color-mix(in srgb, var(--mm-studio-accent) 20%, transparent);
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 55%, var(--mm-studio-border));
+	color: var(--mm-studio-accent);
+	font-weight: 600;
+}
+
+.card {
+	display: grid;
+	gap: 8px;
+	padding: 10px;
+	border: 1px solid var(--mm-studio-border);
+	border-radius: var(--mm-studio-radius);
+	background: var(--mm-studio-glass);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+}
+
+// [[styles.studio.tune]]
+// [[@menu.controls.section]]
+// [[@menu.controls.inline]]
+// @when - 07-29-2026
+// @what - Tune-tab frosted glass control system (~400px dock)
+// @!note - CSS custom properties only; no SCSS variables
+.tuneRoot {
+	--mm-studio-glass-rail: color-mix(in srgb, #000 42%, transparent);
+	--mm-studio-glass-tile: color-mix(in srgb, var(--spice-text, #fff) 6%, transparent);
+	--mm-studio-rim: color-mix(in srgb, var(--spice-text, #fff) 14%, transparent);
+	display: grid;
+	gap: 16px;
+}
+
+// [[styles.studio.tuneCollapse]]
+// [[@menu.controls.section]]
+// @what - frosted accordion; spectrum tint washes (not a painted left stripe)
+// @how - data-section → --mm-studio-section-accent; height = 0fr/1fr; tuck = translateY under header
+.tuneSection {
+	--mm-studio-section-accent: var(--mm-studio-accent);
+	position: relative;
+	border: 1px solid color-mix(in srgb, var(--mm-studio-section-accent) 22%, var(--mm-studio-rim));
+	border-radius: 18px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--mm-studio-section-accent) 2%, transparent);
+	justify-items: center;
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 7%, transparent) inset,
+		0 12px 32px rgba(0, 0, 0, 0.32);
+	transition:
+		border-color 220ms ease,
+		box-shadow 220ms ease;
+}
+
+// @what - per-section spectrum accents from global mm-g3c palette
+.tuneSection[data-section='overlay'] {
+	--mm-studio-section-accent: var(--mm-g3c-37);
+}
+.tuneSection[data-section='hypno'] {
+	--mm-studio-section-accent: var(--mm-g3c-54);
+}
+.tuneSection[data-section='motion'] {
+	--mm-studio-section-accent: var(--mm-g3c-8);
+}
+.tuneSection[data-section='blur'] {
+	// @what - cyan-teal for spatial blur section (distinct from motion amber)
+	--mm-studio-section-accent: var(--mm-g3c-35);
+}
+.tuneSection[data-section='particles'] {
+	--mm-studio-section-accent: var(--mm-g3c-21);
+}
+.tuneSection[data-section='layout'] {
+	// @what - layout map + spin section accent
+	--mm-studio-section-accent: var(--mm-g3c-42);
+}
+.tuneSection[data-section='field'] {
+	--mm-studio-section-accent: var(--mm-g3c-49);
+}
+
+.tuneOpen {
+	border-color: color-mix(in srgb, var(--mm-studio-section-accent) 45%, var(--mm-studio-rim));
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--mm-studio-section-accent) 16%, transparent) inset,
+		0 0 28px color-mix(in srgb, var(--mm-studio-section-accent) 12%, transparent),
+		0 14px 36px rgba(0, 0, 0, 0.36);
+}
+
+// @why - opaque-enough frost so collapsing body can tuck underneath without showing through
+.tuneSectionToggle {
+	appearance: none;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 12px 12px 12px 14px;
+	border: none;
+	position: relative;
+	z-index: 2;
+	flex-shrink: 0;
+	cursor: pointer;
+	font: inherit;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-align: left;
+	color: var(--mm-studio-text);
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--spice-text, #fff) 10%, transparent), transparent 70%),
+		color-mix(
+			in srgb,
+			var(--spice-main, #121212) 78%,
+			color-mix(in srgb, var(--mm-studio-section-accent) 14%, transparent)
+		);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+	box-shadow: 0 1px 0 color-mix(in srgb, var(--spice-text, #fff) 8%, transparent);
+	transition:
+		background 180ms ease,
+		box-shadow 180ms ease;
+}
+
+.tuneSectionToggle:hover {
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--spice-text, #fff) 14%, transparent), transparent 70%),
+		color-mix(
+			in srgb,
+			var(--spice-main, #121212) 70%,
+			color-mix(in srgb, var(--mm-studio-section-accent) 22%, transparent)
+		);
+}
+
+.tuneOpen .tuneSectionToggle {
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--mm-studio-section-accent) 18%, transparent), transparent 75%),
+		color-mix(
+			in srgb,
+			var(--spice-main, #121212) 74%,
+			color-mix(in srgb, var(--mm-studio-section-accent) 16%, transparent)
+		);
+	box-shadow:
+		0 1px 0 color-mix(in srgb, var(--spice-text, #fff) 6%, transparent),
+		0 8px 18px color-mix(in srgb, var(--mm-studio-section-accent) 10%, transparent);
+}
+
+.tuneSectionTitle {
+	min-width: 0;
+}
+
+.tuneChevronBtn {
+	flex-shrink: 0;
+	width: 28px;
+	height: 28px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	background: color-mix(in srgb, var(--mm-studio-section-accent) 16%, transparent);
+	border: 1px solid color-mix(in srgb, var(--mm-studio-section-accent) 40%, transparent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 5%, transparent) inset;
+	transition:
+		background 180ms ease,
+		border-color 180ms ease,
+		transform 180ms ease;
+}
+
+.tuneSectionToggle:hover .tuneChevronBtn {
+	background: color-mix(in srgb, var(--mm-studio-section-accent) 28%, transparent);
+	transform: scale(1.04);
+}
+
+.tuneChevron {
+	display: inline-flex;
+	color: var(--mm-studio-section-accent);
+	font-size: 1rem;
+	line-height: 1;
+	width: auto;
+	height: auto;
+	text-align: center;
+	align-content: center;
+	justify-content: center;
+	align-items: center;
+	justify-items: center;
+	aspect-ratio: 1;
+	position: absolute;
+	inset: 0;
+	border: 1px solid transparent;
+	box-sizing: content-box;
+	transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tuneOpen .tuneChevron {
+	transform: rotate(90deg);
+}
+
+// @what - height accordion via grid-template-rows (header is outside this shell)
+// @necessary - padding lives on .tuneBody inside the inner, not on this row
+.tuneCollapse {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tuneOpen .tuneCollapse {
+	grid-template-rows: 1fr;
+}
+
+.tuneCollapseInner {
+	overflow: hidden;
+	min-height: 0;
+}
+
+// @how - translate tuck under frosted header + opacity; height still driven by grid rows above
+.tuneBody {
+	display: grid;
+	gap: 12px;
+	padding: 12px 10px 12px;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(-28px);
+	transition:
+		opacity 220ms ease,
+		transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tuneOpen .tuneBody {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0);
+	transition:
+		opacity 260ms ease 40ms,
+		transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+// @what - nested field tile (radial wash; no backdrop-filter)
+.tuneCard {
+	display: grid;
+	gap: 8px;
+	padding: 10px;
+	border-radius: 14px;
+	border: 1px solid color-mix(in srgb, var(--mm-studio-section-accent) 20%, var(--mm-studio-rim));
+	background: radial-gradient(
+		200% 300% at 90% 90%,
+		transparent,
+		color-mix(in srgb, var(--mm-studio-section-accent) 4%, transparent),
+		color-mix(in srgb, var(--mm-studio-section-accent) 11%, transparent),
+		transparent,
+		color-mix(in srgb, var(--mm-studio-section-accent) 8%, transparent)
+	);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 4%, transparent) inset,
+		0 6px 18px rgba(0, 0, 0, 0.18);
+	transition:
+		border-color 180ms ease,
+		box-shadow 180ms ease,
+		background 180ms ease;
+}
+
+.tuneCardDirty {
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 55%, transparent);
+	background:
+		linear-gradient(160deg, color-mix(in srgb, var(--mm-studio-accent) 14%, transparent), transparent 55%),
+		var(--mm-studio-glass-tile);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--mm-studio-accent) 18%, transparent) inset,
+		0 0 22px color-mix(in srgb, var(--mm-studio-accent) 14%, transparent);
+}
+
+.tuneHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding-bottom: 5px;
+}
+
+.tuneTitle {
+	font-weight: 600;
+	font-size: 0.88rem;
+	letter-spacing: 0.01em;
+}
+
+.valuePill {
+	font-size: 0.72rem;
+	font-weight: 650;
+	font-variant-numeric: tabular-nums;
+	color: var(--mm-studio-text);
+	background: color-mix(in srgb, var(--mm-studio-section-accent) 18%, transparent);
+	border: 1px solid color-mix(in srgb, var(--mm-studio-section-accent) 36%, transparent);
+	border-radius: 999px;
+	padding: 3px 10px;
+	box-shadow: 0 0 12px color-mix(in srgb, var(--mm-studio-section-accent) 12%, transparent);
+}
+
+.line {
+	display: grid;
+	grid-template-columns: 52px minmax(0, 1fr) 30px;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 0;
+	padding-inline: 8px;
+	border-radius: var(--mm-studio-button-border-radius);
+	background: color-mix(in srgb, var(--mm-studio-accent) 10%, transparent);
+}
+
+.lineDirty {
+	--mm-studio-accent: var(--spice-button-active, #1ed760);
+	background: color-mix(in srgb, var(--mm-studio-accent) 8%, transparent);
+	box-shadow: inset 3px 0 0 var(--mm-studio-accent);
+	padding-left: 8px;
+	margin-left: 0;
+}
+
+.label {
+	color: var(--mm-studio-muted);
+	font-size: 0.78rem;
+	font-weight: 600;
+	text-transform: lowercase;
+	letter-spacing: 0.03em;
+}
+
+// @what - recessed inset glass rail for stepper controls
+.stepperRail {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+	width: 100%;
+	padding: 4px;
+	border-radius: var(--mm-studio-button-border-radius);
+	background: var(--mm-studio-glass-rail);
+	border: 1px solid color-mix(in srgb, var(--spice-text, #fff) 8%, transparent);
+	box-shadow:
+		inset 0 2px 6px rgba(0, 0, 0, 0.35),
+		inset 0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 3%, transparent);
+}
+
+.stepBtn {
+	appearance: none;
+	border: 1px solid color-mix(in srgb, var(--spice-text, #fff) 12%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--spice-text, #fff) 14%, transparent),
+		color-mix(in srgb, var(--spice-text, #fff) 4%, transparent)
+	);
+	color: var(--mm-studio-text);
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border-radius: var(--mm-studio-button-border-radius);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	flex-shrink: 0;
+	box-shadow: 0 1px 0 color-mix(in srgb, var(--spice-text, #fff) 10%, transparent) inset;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		transform 120ms ease,
+		box-shadow 140ms ease;
+}
+
+.stepBtn:hover {
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--mm-studio-section-accent) 36%, transparent),
+		color-mix(in srgb, var(--mm-studio-section-accent) 12%, transparent)
+	);
+	border-color: color-mix(in srgb, var(--mm-studio-section-accent) 50%, transparent);
+	box-shadow: 0 0 14px color-mix(in srgb, var(--mm-studio-section-accent) 22%, transparent);
+}
+
+.stepBtn:active {
+	transform: scale(0.9);
+}
+
+.stepBtn:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--mm-studio-section-accent) 60%, transparent);
+}
+
+.stepBtnGhost {
+	opacity: 0.72;
+	background: color-mix(in srgb, var(--spice-text, #fff) 5%, transparent);
+}
+
+.stepBtnGhost:hover {
+	opacity: 1;
+}
+
+// @what - center editable value capsule inside the rail
+.valueWell {
+	flex: 1;
+	min-width: 0;
+	height: 30px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	padding: 4px 8px;
+	border-radius: var(--mm-studio-button-border-radius);
+	background: color-mix(in srgb, var(--spice-text, #fff) 7%, transparent);
+	border: none;
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.valueWell > * {
+	height: 20px;
+}
+
+.valueWellText {
+	min-width: 36px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	font-weight: 650;
+	font-size: 0.88rem;
+	cursor: text;
+	color: var(--mm-studio-text);
+}
+
+.valueWellInput {
+	width: 52px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	font-weight: 650;
+	font-size: 0.88rem;
+	font: inherit;
+	background: transparent;
+	color: var(--mm-studio-text);
+	border: none;
+	outline: none;
+	border-bottom: 1px solid color-mix(in srgb, var(--mm-studio-section-accent) 70%, transparent);
+	padding: 0 2px;
+}
+
+.icon {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+}
+
+.delta {
+	font-size: 0.68rem;
+	font-weight: 700;
+	color: var(--mm-studio-accent);
+	background: color-mix(in srgb, var(--mm-studio-accent) 16%, transparent);
+	border: 1px solid color-mix(in srgb, var(--mm-studio-accent) 30%, transparent);
+	border-radius: 999px;
+	padding: 1px 6px;
+	white-space: nowrap;
+}
+
+.revertSpacer {
+	width: 30px;
+	height: 30px;
+	flex-shrink: 0;
+}
+
+.revertBtn {
+	appearance: none;
+	border: 1px solid color-mix(in srgb, var(--spice-text, #fff) 12%, transparent);
+	background: color-mix(in srgb, var(--spice-text, #fff) 5%, transparent);
+	color: var(--mm-studio-muted);
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border-radius: var(--mm-studio-button-border-radius);
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	transition:
+		color 140ms ease,
+		border-color 140ms ease,
+		background 140ms ease,
+		box-shadow 140ms ease,
+		transform 120ms ease;
+}
+
+.revertBtn:hover {
+	color: var(--mm-studio-accent);
+	border-color: color-mix(in srgb, var(--mm-studio-accent) 55%, transparent);
+	background: color-mix(in srgb, var(--mm-studio-accent) 14%, transparent);
+	box-shadow: 0 0 16px color-mix(in srgb, var(--mm-studio-accent) 22%, transparent);
+}
+
+.revertBtn:active {
+	transform: scale(0.9);
+}
+
+// @what - inset track with capsule segment pills
+.segmentTrack {
+	display: flex;
+	width: 100%;
+	gap: 3px;
+	padding: 3px;
+	border-radius: var(--mm-studio-button-border-radius, 5px);
+	background: var(--mm-studio-glass-rail);
+	border: 1px solid color-mix(in srgb, var(--spice-text, #fff) 8%, transparent);
+	box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+// @what - wrap variant for shape picker: N equal square cells
+.segmentTrackWrap {
+	display: grid;
+	///grid-template-columns: repeat(5, 1fr);
+	///grid-template-rows: 1fr;
+	// @purpose - this is the general solution for N columns and 1 row
+	grid-template-columns: none;
+	grid-auto-flow: column;
+	grid-template-rows: none;
+	grid-auto-columns: 1fr;
+	gap: 2px;
+	border-radius: var(--mm-studio-button-border-radius);
+}
+
+.segmentPill {
+	appearance: none;
+	flex: 1;
+	border: 1px solid transparent;
+	background: transparent;
+	// @what - cutout fill for hollow polygon glyphs (matches track / active pill)
+	--mm-shape-cutout: var(--mm-studio-glass-rail);
+	color: var(--mm-studio-muted);
+	padding: 7px 8px;
+	border-radius: var(--mm-studio-button-border-radius, 5px);
+	cursor: pointer;
+	font: inherit;
+	font-size: 0.78rem;
+	font-weight: 600;
+	transition:
+		background 160ms ease,
+		border-color 160ms ease,
+		color 160ms ease,
+		box-shadow 160ms ease,
+		transform 120ms ease;
+}
+
+.segmentPill:hover {
+	color: var(--mm-studio-text);
+	background: color-mix(in srgb, var(--spice-text, #fff) 6%, transparent);
+	--mm-shape-cutout: color-mix(in srgb, var(--spice-text, #fff) 6%, transparent);
+}
+
+.segmentPill:active {
+	transform: scale(0.97);
+}
+
+.segmentPillActive {
+	color: var(--mm-studio-text);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--mm-studio-section-accent) 38%, transparent),
+		color-mix(in srgb, var(--mm-studio-section-accent) 16%, transparent)
+	);
+	border-color: color-mix(in srgb, var(--mm-studio-section-accent) 45%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 8%, transparent) inset,
+		0 0 16px color-mix(in srgb, var(--mm-studio-section-accent) 20%, transparent);
+	--mm-shape-cutout: color-mix(in srgb, var(--mm-studio-section-accent) 22%, transparent);
+}
+
+// @what - square outline chrome for shape pills only (hypno/mode pills keep base .segmentPill)
+.segmentTrackWrap .segmentPill {
+	aspect-ratio: 1;
+	grid-column: span 1;
+	color: var(--mm-studio-text);
+	box-shadow: 2px 5px 15px 1px rgb(from var(--mm-studio-accent-muted) r g b / 0.2) inset;
+	background: linear-gradient(135deg, rgb(from var(--mm-studio-accent-muted) r g b / 0.1), transparent);
+	outline: 1px solid rgb(from var(--mm-studio-accent-muted) r g b / 0.1);
+	outline-offset: -2px;
+	border: none;
+	transition: 220ms linear;
+	transition-property: outline, background, box-shadow;
+}
+
+// @what - shape-track hover beats global .segmentPill:hover via specificity
+.segmentTrackWrap .segmentPill:hover {
+	color: var(--mm-studio-text);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--mm-studio-section-accent) 18%, transparent),
+		color-mix(in srgb, var(--mm-studio-section-accent) 6%, transparent)
+	);
+	outline-color: color-mix(in srgb, var(--mm-studio-section-accent) 25%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 8%, transparent) inset,
+		0 0 16px color-mix(in srgb, var(--mm-studio-section-accent) 10%, transparent);
+	--mm-shape-cutout: color-mix(in srgb, var(--mm-studio-section-accent) 12%, transparent);
+}
+
+// @what - shape-track active beats global .segmentPillActive via specificity
+.segmentTrackWrap .segmentPillActive {
+	color: var(--mm-studio-text);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--mm-studio-section-accent) 38%, transparent),
+		color-mix(in srgb, var(--mm-studio-section-accent) 16%, transparent)
+	);
+	outline-color: color-mix(in srgb, var(--mm-studio-section-accent) 45%, transparent);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--spice-text, #fff) 8%, transparent) inset,
+		0 0 16px color-mix(in srgb, var(--mm-studio-section-accent) 20%, transparent);
+	--mm-shape-cutout: color-mix(in srgb, var(--mm-studio-section-accent) 22%, transparent);
+}
+
+// [[styles.studio.shapeGlyph]]
+// @what - hollow outline glyphs for dotShape pills (config value stays the text name)
+// @how - circle/square via border; triangle/pentagon/hexagon via clip-path + inset cutout
+.shapeGlyph {
+	display: block;
+	aspect-ratio: 1;
+	width: 17px;
+	height: 17px;
+	box-sizing: border-box;
+	flex-shrink: 0;
+	margin-inline: auto;
+	color: inherit;
+	background: transparent;
+	border: 2.5px solid currentColor;
+	position: relative;
+}
+
+.shapeGlyph[data-shape='circle'] {
+	border-radius: 50%;
+}
+
+.shapeGlyph[data-shape='square'] {
+	border-radius: 2px;
+}
+
+// @what - polygon outlines: outer fill + inset ::after cutout matching pill bg
+.shapeGlyph[data-shape='triangle'],
+.shapeGlyph[data-shape='pentagon'],
+.shapeGlyph[data-shape='hexagon'] {
+	border: none;
+	background: currentColor;
+}
+
+.shapeGlyph[data-shape]::after {
+	background: rgb(from var(--mm-studio-glass-rail) r g b / 1);
+}
+
+.shapeGlyph[data-shape='triangle'] {
+	width: 20px;
+	height: 20px;
+	clip-path: polygon(50% 4%, 96% 92%, 4% 92%);
+}
+
+.shapeGlyph[data-shape='triangle']::after {
+	content: '';
+	position: absolute;
+	inset: 3px;
+	background: rgb(from var(--mm-studio-glass-rail) r g b / 1);
+	clip-path: polygon(50% 4%, 96% 92%, 4% 92%);
+}
+
+.shapeGlyph[data-shape='pentagon'],
+.shapeGlyph[data-shape='hexagon'] {
+	width: 18px;
+	height: 18px;
+}
+
+.shapeGlyph[data-shape='pentagon'] {
+	// @how - regular pentagon (flat-top-ish, point up)
+	clip-path: polygon(50% 2%, 98% 38%, 79% 98%, 21% 98%, 2% 38%);
+}
+
+.shapeGlyph[data-shape='pentagon']::after {
+	content: '';
+	position: absolute;
+	inset: 3px;
+	background: rgb(from var(--mm-studio-glass-rail) r g b / 1);
+	clip-path: polygon(50% 2%, 98% 38%, 79% 98%, 21% 98%, 2% 38%);
+}
+
+.shapeGlyph[data-shape='hexagon'] {
+	clip-path: polygon(25% 4%, 75% 4%, 98% 50%, 75% 96%, 25% 96%, 2% 50%);
+}
+
+.shapeGlyph[data-shape='hexagon']::after {
+	content: '';
+	position: absolute;
+	inset: 3px;
+	background: rgb(from var(--mm-studio-glass-rail) r g b / 1);
+	clip-path: polygon(25% 4%, 75% 4%, 98% 50%, 75% 96%, 25% 96%, 2% 50%);
+}
+
+.emptyHint {
+	color: var(--mm-studio-muted);
+	font-size: 0.85rem;
+	padding: 8px 2px;
+}
